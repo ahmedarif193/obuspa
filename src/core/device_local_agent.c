@@ -173,7 +173,7 @@ int DEVICE_LOCAL_AGENT_Init(void)
 #endif
 
     // NOTE: The default value of this database parameter is setup later in DEVICE_LOCAL_AGENT_SetDefaults()
-    err |= USP_REGISTER_DBParam_ReadOnly(endpoint_id_path, "", DM_STRING);
+    err |= USP_REGISTER_DBParam_ReadWrite(endpoint_id_path, "", NULL, NULL, DM_STRING);
 
     err |= USP_REGISTER_DBParam_ReadWrite(dual_stack_preference_path, "IPv4", Validate_DualStackPreference, NotifyChange_DualStackPreference, DM_STRING);
     if (err != USP_ERR_OK)

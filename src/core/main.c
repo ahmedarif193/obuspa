@@ -249,7 +249,10 @@ int main(int argc, char *argv[])
                 break;
         }
     }
-
+    // ovveride the args 
+	usp_interface="lo";
+	enable_protocol_trace = true;
+	TEXT_UTILS_StringToUnsigned("4", &usp_log_level);	
     // Print a warning for any remaining command line arguments
     if (optind < argc)
     {

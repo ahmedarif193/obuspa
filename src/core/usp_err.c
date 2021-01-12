@@ -187,15 +187,11 @@ void USP_ERR_SetMessage_SqlParam(const char *func, int line, const char *sqlfunc
 **************************************************************************/
 char *USP_ERR_ToString(int err, char *buf, int len)
 {
-#if HAVE_STRERROR_R && !STRERROR_R_CHAR_P
     // XSI version of strerror_r
     strerror_r(err, buf, len);
     return buf;
-#else
     // GNU version of strerror_r
     // This must return the string directly, because it usually returns a static string rather than copying into the buffer
-    return strerror_r(err, buf, len);
-#endif
 }
 
 /*********************************************************************//**
