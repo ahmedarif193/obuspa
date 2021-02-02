@@ -7,8 +7,8 @@ find_package(ZLIB REQUIRED)
 pkg_check_modules(OpenSSL openssl REQUIRED)
 pkg_check_modules(ARES libcares REQUIRED)
 pkg_check_modules(SQL REQUIRED sqlite3)
-pkg_check_modules(MOSQUITTOPP REQUIRED libmosquittopp)
-pkg_check_modules(MOSQUITTO REQUIRED libmosquitto)
+#pkg_check_modules(MOSQUITTOPP REQUIRED libmosquittopp)
+#pkg_check_modules(MOSQUITTO REQUIRED libmosquitto)
 
 include_directories(${CURL_INCLUDE_DIR})
 include_directories(${ZLIB_INCLUDE_DIR})
@@ -95,7 +95,7 @@ SET(TARGET_SRC
     )
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DENABLE_COAP")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DENABLE_MQTT")
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DENABLE_MQTT")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DOBUSPA_LOCAL_STATE_DIR=\"tmp\"")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Werror=unused-value -Werror=format -Winit-self -Wparentheses -Werror=parentheses -Wuninitialized -Werror=uninitialized -Wpointer-arith")
 
