@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 2.6)
 project(uspd)
 
+
+set(CMAKE_INSTALL_INCLUDEDIR include)
+set(CMAKE_INSTALL_LIBDIR lib)
+
 find_package(PkgConfig REQUIRED)
 find_package(CURL REQUIRED)
 find_package(ZLIB REQUIRED)
@@ -18,9 +22,11 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/include/)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/libjson/ccan/json/)
 
 set(OBUSPA_LOCAL_STATE_DIR /tmp)
-
+#    src/core/main.c
+#    src/vendor/vendor.c
+#    src/vendor/vendor_factory_reset_example.c
 SET(TARGET_SRC
-    src/core/main.c
+    src/vendor/vendor.c
     src/core/mtp_exec.c
     src/core/dm_exec.c
     src/core/bdc_exec.c
@@ -86,8 +92,6 @@ SET(TARGET_SRC
     src/core/uri.c
     src/core/mqtt.c
     src/core/device_mqtt.c
-    src/vendor/vendor.c
-    src/vendor/vendor_factory_reset_example.c
     src/libjson/ccan/json/json.c
     src/protobuf-c/protobuf-c.c
     src/protobuf-c/usp-msg.pb-c.c
@@ -98,6 +102,21 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DENABLE_COAP")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DENABLE_MQTT")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DOBUSPA_LOCAL_STATE_DIR=\"tmp\"")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Werror=unused-value -Werror=format -Winit-self -Wparentheses -Werror=parentheses -Wuninitialized -Werror=uninitialized -Wpointer-arith")
+link_directories(${CMAKE_CURRENT_BINARY_DIR})
+SET(CMAKE_EXE_LINKER_FLAGS
+          "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath -Wl,$ORIGIN")
 
-add_executable(uspd ${TARGET_SRC})
-target_link_libraries(uspd ${SQL_LIBRARIES} ${MOSQUITTO_LIBRARIES} ${MOSQUITTOPP_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} ${SQLITE3_LIBRARIES} ${ARES_LIBRARIES} ${OpenSSL_LIBRARIES} -lm -ldl -lpthread -lrt  )
+          
+ADD_LIBRARY (coreusp SHARED ${TARGET_SRC})
+add_executable(uspd src/core/main.c)
+target_link_libraries(uspd coreusp)
+
+target_link_libraries(coreusp ${SQL_LIBRARIES} ${MOSQUITTO_LIBRARIES} ${MOSQUITTOPP_LIBRARIES} ${ZLIB_LIBRARIES} ${CURL_LIBRARIES} ${SQLITE3_LIBRARIES} ${ARES_LIBRARIES} ${OpenSSL_LIBRARIES} -lm -ldl -lpthread -lrt  -lcoreusp)
+set_target_properties(coreusp PROPERTIES PUBLIC_HEADER "src/include/usp_api.h;src/include/usp_err_codes.h;src/include/vendor_api.h;src/vendor/vendor_defs.h")
+configure_file(coreusp.pc.in coreusp.pc @ONLY)
+install(FILES ${CMAKE_BINARY_DIR}/coreusp.pc DESTINATION /usr/lib/pkgconfig)
+
+install(TARGETS uspd DESTINATION bin)
+install(TARGETS coreusp 
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} 
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

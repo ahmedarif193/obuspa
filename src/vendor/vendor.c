@@ -44,9 +44,35 @@
 #include <stdbool.h>
 
 #include "usp_err_codes.h"
-#include "vendor_defs.h"
+//#include "vendor_defs.h"
 #include "vendor_api.h"
 #include "usp_api.h"
+
+#include <limits.h>       //For PATH_MAX
+#include <string.h>
+#include <dirent.h>
+#include "dlfcn.h"
+
+#define VENDORS_FOLDER "/usr/local/lib/amo"
+#define VENDORS_MAX 128
+static int NbreOfEntries;
+typedef int (*called_func)(void*);
+typedef int (*AMO_Start)(void*);
+typedef int (*AMO_Stop)(void*);
+struct Vendor
+{
+    char name[PATH_MAX + 1];
+    char fullpath[PATH_MAX + 1];
+    void *pointer;
+    called_func init;
+    called_func start;
+    called_func stop;
+    /* data */
+};
+
+struct Vendor vendors[VENDORS_MAX];
+
+
 
 /*********************************************************************//**
 **
@@ -59,10 +85,69 @@
 ** \return  USP_ERR_OK if successful
 **
 **************************************************************************/
+
 int VENDOR_Init(void)
 {
+    int errRet = USP_ERR_OK;
+    memset(&vendors,0,sizeof(vendors));
 
-    return USP_ERR_OK;
+    DIR *d;
+    struct dirent *dir;
+    char path[] = VENDORS_FOLDER;
+    d = opendir(path);
+    if (d)
+    {
+        int NbreOfEntries=0;
+        for(int i=0;(dir = readdir(d)) != NULL;i++){
+            //Condition to check regular file.
+            if(dir->d_type==DT_REG){
+                char full_path[1000];
+                full_path[0]='\0';
+                strcat(full_path,path);
+                strcat(full_path,"/");
+                strcat(full_path,dir->d_name);
+                printf("%s\n",full_path);
+                snprintf(vendors[i].fullpath,strlen(vendors[i].fullpath),"%s",full_path);
+                vendors[i].pointer = dlopen(full_path, RTLD_LAZY);
+                if(vendors[i].pointer){
+                    vendors[i].init = (called_func)dlsym(vendors[i].pointer,"AMO_Init");
+                    char* error = dlerror();
+                    if(error)
+                    {
+                        printf("could not dlsym: %s\n",error);
+                        continue;
+                    }
+                    vendors[i].start = (called_func)dlsym(vendors[i].pointer,"AMO_Init");
+                    error = dlerror();
+                    if(error)
+                    {
+                        printf("could not dlsym: %s\n",error);
+                        continue;
+                    }
+                    vendors[i].stop = (called_func)dlsym(vendors[i].pointer,"AMO_Init");
+                    error = dlerror();
+                    if(error)
+                    {
+                        printf("could not dlsym: %s\n",error);
+                        continue;
+                    }
+                    void *ret =NULL;
+                    printf("vendors[i].init(ret);\n");
+                    errRet |= vendors[i].init(ret);
+                }
+                NbreOfEntries++;
+            }
+        }
+        closedir(d);
+    }
+//    while (NbreOfEntries--) {
+//        char buf[PATH_MAX + 1]; 
+  //      realpath(namelist[n]->d_name, buf);
+
+   // }
+            //free(namelist[n]);
+    //free(namelist);
+    return errRet;
 }
 
 
@@ -81,8 +166,13 @@ int VENDOR_Init(void)
 **************************************************************************/
 int VENDOR_Start(void)
 {
-
-    return USP_ERR_OK;
+    int errRet = USP_ERR_OK;
+    for(int i=0;i<NbreOfEntries;i++){
+        void *ret =NULL;
+        if(vendors[i].start)
+            errRet |= vendors[i].start(ret);
+    }
+    return errRet;
 }
 
 /*********************************************************************//**
@@ -99,7 +189,12 @@ int VENDOR_Start(void)
 **************************************************************************/
 int VENDOR_Stop(void)
 {
-
-    return USP_ERR_OK;
+    int errRet = USP_ERR_OK;
+    for(int i=0;i<NbreOfEntries;i++){
+        void *ret =NULL;
+        if(vendors[i].stop)
+            errRet |= vendors[i].stop(ret);
+    }
+    return errRet;
 }
 
