@@ -7,6 +7,7 @@ from pprint import pprint
 from google.protobuf import text_format
 import msg_handler
 
+msg_handler.MSG_SENGER_GetRequest('1025','controller','agent','Device.STOMP.Connection.1.Alias')
 conn = stomp.Connection([('localhost', 61613)], heartbeats=(4000, 4000))
 
 def connect_and_subscribe(conn):
