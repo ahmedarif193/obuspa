@@ -1,38 +1,44 @@
-import usp_record_1_1_pb2
-import usp_msg_1_1_pb2
+import usp_commons
+
+
 from pprint import pprint
 from google.protobuf import text_format
 from google.protobuf.message import DecodeError
 import json
 from dict_shortcuts import *
 
-
-
-
 def MSG_HANDLER_HandleBinaryRecord(stomp_msg):
-    print('----- >>>> MSG_HANDLER_HandleBinaryRecord',stomp_msg)
-    record = usp_record_1_1_pb2.Record()
+    print('----- >>>> MSG_HANDLER_HandleBinaryRecord',)
+    record = usp_commons.usp_record_1_1_pb2.Record()
     try:
-        record.ParseFromString(str.encode(stomp_msg))
-    except DecodeError:
-        print('----- >>>> DecodeError',DecodeError)
+        bytes = stomp_msg.encode(encoding='UTF-8')
+        print('----- >>>> MSG_HANDLER_HandleBinaryRecord', stomp_msg)
+        record.ParseFromString(bytes)
+    except DecodeError as e:
+        print('Unable to decode: %s', e)
     else:
         agent_endpoint = record.from_id
+        print(text_format.MessageToString(record))
+        print('----- >>>> 2  MSG_HANDLER_HandleBinaryRecord', record)
+
         MSG_HANDLER_HandleBinaryMessage(record.no_session_context.payload,agent_endpoint)
 
 
 def MSG_HANDLER_HandleBinaryMessage(record_payload,agent_endpoint):
-    msg = usp_msg_1_1_pb2.Msg()
+    print('----- >>>> MSG_HANDLER_HandleBinaryMessage', agent_endpoint, record_payload)
+
+    msg = usp_commons.usp_msg_1_1_pb2.Msg()
     try:
         msg.ParseFromString(record_payload)
     except DecodeError:
-        print('----- >>>> MSG_HANDLER_HandleBinaryMessage>>>>>>>>>>>> DecodeError')
+        print('----- >>>> MSG_HANDLER_HandleBinaryMessage>>>>>>>>>>>> DecodeError', record.no_session_context.payload)
     HandleUspMessage(msg,agent_endpoint)
 
 #at this state we can reply ---------------------------------------
 def HandleUspMessage(usp_msg,agent_endpoint):
+    print(text_format.MessageToString(usp_msg))
     #handle usp_msg.body.error
-    if usp_msg.header.msg_type == 2 :
+    if usp_msg.header.msg_type == usp_commons.USP_MsgType.GET_RESP :
         MSG_HANDLER_HandleGet_resp(usp_msg.body.response,agent_endpoint)
 
 def MSG_HANDLER_HandleGet_resp(response_payload,agent_endpoint):

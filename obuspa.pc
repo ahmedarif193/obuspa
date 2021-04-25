@@ -1,0 +1,9 @@
+includedir=/usr/local/include
+libdir=/usr/local/lib
+
+Name: libcoreusp
+Version: 3.0
+Description: lib coreusp library
+Requires:
+Libs: -L${libdir} -lcoreusp
+Cflags: -I${includedir}
