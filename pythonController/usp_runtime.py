@@ -19,25 +19,36 @@ class STOMPListener(stomp.ConnectionListener):
     def on_error(self, frame):
         print('received an error "%s"' % frame.body)
 
-    def on_message(self, frame):
+#    def on_message(self, frame):
+    def on_message(self, headers, body):
         from google.protobuf.message import DecodeError
-        for key, value in frame.headers.items() :
+        for key, value in headers.items():
             print (key, value)
-        msg_handler.MSG_HANDLER_HandleBinaryRecord(frame.body)
+        msg_handler.MSG_HANDLER_HandleBinaryRecord(body)
+#        for key, value in frame.headers.items() :
+#            print (key, value)
+#        msg_handler.MSG_HANDLER_HandleBinaryRecord(frame.body)
 
     def on_disconnected(self):
         print('disconnected')
+        #start_stomp()
 
-def start_stop(conn):
+def start_stomp():
     conn.set_listener('', STOMPListener(conn))
-    conn.connect('admin1', 'admin1', wait=True)
+
+    try:
+        conn.connect('admin1', 'admin1', wait=True)
+    except Exception as e:
+        print('Exception on disconnect. reconnecting...')
+        print(e)
+        return 1
+    else:
     #conn.connect('ahmed', 'ahmed', wait=True)
-    conn.subscribe(destination='controller', id=101)
-    print("conn.connect OK")
+        conn.subscribe(destination='controller', id=101)
+        return 0
 
 def usp_stomp_thread(name):
     usp_database.initdb()
-    start_stop(conn)
     devices_registred = usp_database.getRegestredDevices()
     while 1:
         for row in devices_registred:
@@ -45,12 +56,12 @@ def usp_stomp_thread(name):
             payload_ping_record = pingRecord.SerializeToString()
             conn.send(body=payload_ping_record, content_type='application/vnd.bbf.usp.msg', destination=row.device_topic)
             print ("--------------------------- device_protocol: ",row.device_protocol, "device_topic:",row.device_topic, "device_id:",row.device_id)
-
-        logging.info("Thread %s: starting", name)
+        logging.info("Thread %s: loop", name)
         time.sleep(2)
 
 def start_server():
-
+    if start_stomp() == 1 :
+        return 1
     #conn.send(, 'application/vnd.bbf.usp.msg', 'agent')
     logging.info("Main    : before creating thread")
     x = threading.Thread(target=usp_stomp_thread, args=(1,))

@@ -1,3 +1,4 @@
+#!/bin/python3.8
 import usp_commons
 
 import os
