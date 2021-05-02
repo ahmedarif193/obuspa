@@ -4,7 +4,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-engine = create_engine('sqlite:///usp_gui.db?check_same_thread=False', echo = True)
+engine = create_engine("mysql+pymysql://uspuser:uspuser@localhost/USP_DATABASE?charset=utf8mb4")
+
 Base = declarative_base()
 Session = sessionmaker(bind = engine)
 session = Session()
@@ -12,10 +13,10 @@ session = Session()
 class Devices(Base):
     __tablename__ = 'devices'
     id = Column(Integer, primary_key = True)
-    device_ip_addr = Column(String)
-    device_protocol = Column(String)
-    device_topic = Column(String)
-    device_id = Column(String)
+    device_ip_addr = Column(String(255))
+    device_protocol = Column(String(255))
+    device_topic = Column(String(255))
+    device_id = Column(String(255))
 
 def initdb():
     Base.metadata.create_all(engine)

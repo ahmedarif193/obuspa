@@ -7,3 +7,8 @@ CREATE TABLE device (
         PRIMARY KEY (id),
         UNIQUE (device_id)
 );
+
+CREATE USER 'uspuser'@'localhost' IDENTIFIED BY 'uspuser';
+GRANT ALL PRIVILEGES ON * . * TO 'uspuser'@'localhost';
+FLUSH PRIVILEGES;
+
