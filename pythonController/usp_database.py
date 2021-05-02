@@ -27,7 +27,16 @@ def getSession():
 
 def getRegestredDevices():
     return session.query(Devices).all()
+    
+def deleteDevice(deviceId):
+    session.query(Devices).filter(Devices.id==deviceId).\
+        delete(synchronize_session=False)
+    session.commit()
 
+def addDevice(device_ip_addr,device_protocol,device_topic,device_id):
+    device = Devices(device_ip_addr = device_ip_addr, device_protocol = device_protocol, device_topic = device_topic, device_id = device_id)
+    session.add(device)
+    session.commit()
 #device1 = Devices(device_ip_addr = '172.0.0.1', device_protocol = 'STOMP', device_topic = 'agent', device_id = 'DM1815209002291')
 #session.add(device1)
 #session.commit()
@@ -35,4 +44,4 @@ def getRegestredDevices():
 devices_registred = session.query(Devices).all()
 
 for row in devices_registred:
-       print ("device_protocol: ",row.device_protocol, "device_topic:",row.device_topic, "device_id:",row.device_id)
+       print ("device_protocol: ",row.device_protocol, "device_topic:",row.device_topic, "device_id:", row.device_id)

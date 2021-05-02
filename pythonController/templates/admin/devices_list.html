@@ -1,0 +1,150 @@
+{% extends 'admin/master.html' %}
+{% block body %}
+{{ super() }}
+
+{% if current_user.is_authenticated %}
+
+<!-- Content Header (Page header) -->
+<section class="content-header">
+  <h1>
+    Custom View 
+    <small>This is a custom view without DB model</small>
+  </h1>
+  <ol class="breadcrumb">
+    <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
+    <li class="active">Custom</li>
+  </ol>
+</section>
+
+<!-- Modal -->
+<div class="modal fade" id="ADDEVICEFORM" tabindex="-1" role="dialog" aria-labelledby="ADDEVICEFORMLabel" aria-hidden="true">
+
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ADDEVICEFORMLabel">Add new USP Device</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form action="" method="post">
+          <div class="form-group">
+            <label for="ProtocolInput">Protocol</label>
+            <select class="form-control" id="ipAddrInput"  name="ProtocolInput">
+              <option value="STOMP">STOMP</option>
+              <option value="MQTT">MQTT</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="ipAddrInput">IP Addr</label>
+            <input type="text" class="form-control" id="ipAddrInput" name="ipAddrInput" placeholder="IP Addr">
+          </div>
+          <div class="form-group">
+            <label for="TopicInput">Topic</label>
+            <input type="text" class="form-control" id="TopicInput" name="TopicInput" placeholder="Topic">
+          </div>
+          <div class="form-group">
+            <label for="DeviceInput">Device ID</label>
+            <input type="text" class="form-control" id="DeviceInput" name="DeviceInput" placeholder="Device ID">
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary" value="SubmitNewDevice">Add Device</button>
+          </form>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<section class="content">
+
+  <div class="row">
+    <!-- Left col -->
+    <section class=" ">      
+      
+      <!-- TO DO List -->
+      <div class="box box-primary">
+        <div class="box-header">
+          <i class="ion ion-clipboard"></i>
+          <h3 class="box-title">Last Added Devices</h3>
+        </div>
+        <!-- /.box-header -->
+        <div class="box-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Actions</th>
+                <th scope="col">Protocol</th>
+                <th scope="col">IP Addr</th>
+                <th scope="col">Topic</th>
+                <th scope="col">Device ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for device in devices %}
+              <tr>
+                <th scope="row">{{ device.id }}</th>
+                <td><a class="btn btn-primary" href="?del={{ device.id }}">Delete</a></td>
+                <td>{{ device.device_protocol }}</td>
+                <td>{{ device.device_ip_addr }}</td>
+                <td>{{ device.device_topic }}</td>
+                <td>{{ device.device_id }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <!-- /.box-body -->
+        <div class="box-footer clearfix no-border">
+          <button type="button" class="btn btn-default pull-right" data-toggle="modal" data-target="#ADDEVICEFORM"><i class="fa fa-plus"></i>Add device</button>
+        </div>
+      </div>
+      <!-- /.box -->
+
+    </section>
+    <!-- /.Left col -->
+
+  </div>
+  <!-- /.row (main row) -->
+
+</section>
+<!-- /.content -->
+{% else %}
+
+<center>
+  <section class="content" style="color: white">
+    <div class="col-sm-12">
+      <h1>Flask-Admin example</h1>
+      <p class="lead">
+        Authentication
+      </p>
+      <p>
+        This example shows how you can use Flask-Admin in an admin template, <br> here I used AdminLTE and <a href="https://pythonhosted.org/Flask-Security/index.html" target="_blank">Flask-Security</a> for authentication.
+      </p>
+      {% if not current_user.is_authenticated %}
+      <p>You can register as a regular user, or log in as a superuser with the following credentials: <br><br>
+
+        email: <b>admin</b> <br>
+        password: <b>admin</b> <br>
+        <br>
+        <p>
+          <a class="btn btn-primary" href="{{ url_for('security.login') }}">Login</a> <a class="btn btn-default" href="{{ url_for('security.register') }}">Register</a>
+        </p>
+        {% endif %}
+        <br>
+        <p>
+          <a class="btn btn-primary" href="/"><i class="glyphicon glyphicon-chevron-left"></i> Back</a>
+        </p>
+      </div>
+    </section>
+  </center>
+
+  <br><br><br><br><br><br><br><br><br>
+  <br><br><br><br><br><br><br><br><br><br>
+  {% endif %}
+
+  {% endblock body %}
