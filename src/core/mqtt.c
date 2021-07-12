@@ -63,7 +63,6 @@
 #ifdef ENABLE_MQTT
 
 #include <mosquitto.h>
-
 // Defines for MQTT Property Values
 #define PUBLISH 0x30
 #define CONTENT_TYPE 3

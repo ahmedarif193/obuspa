@@ -90,6 +90,8 @@ SET(TARGET_SRC
     src/core/coap_client.c
     src/core/coap_server.c
     src/core/uri.c
+    src/core/mqtt.c
+    src/core/device_mqtt.c
     src/libjson/ccan/json/json.c
     src/protobuf-c/protobuf-c.c
     src/protobuf-c/usp-msg.pb-c.c
@@ -97,9 +99,10 @@ SET(TARGET_SRC
     )
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DENABLE_COAP")
-#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DENABLE_MQTT")
-#src/core/mqtt.c
-#src/core/device_mqtt.c
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DENABLE_MQTT")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDISABLE_STOMP")
+
+
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DOBUSPA_LOCAL_STATE_DIR=\"tmp\"")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Werror=unused-value -Werror=format -Winit-self -Wparentheses -Werror=parentheses -Wuninitialized -Werror=uninitialized -Wpointer-arith")
 link_directories(${CMAKE_CURRENT_BINARY_DIR})

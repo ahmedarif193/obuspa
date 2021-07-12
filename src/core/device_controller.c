@@ -80,6 +80,7 @@ typedef struct
 
     // NOTE: The following is not a union, because the data model would allow both MTP.{i}.STOMP and MTP.{i}.CoAP objects to be seeded at the same time - with protocol choosing which one is active
 #ifndef DISABLE_STOMP
+
     int stomp_connection_instance;
     char *stomp_controller_queue;
 #endif

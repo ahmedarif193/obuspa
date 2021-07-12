@@ -1,6 +1,6 @@
 #!venv/bin/python
 import os
-from flask import Flask, url_for, redirect, render_template, request, abort
+from flask import Flask, url_for, redirect, render_template, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import Security, SQLAlchemyUserDatastore, \
     UserMixin, RoleMixin, login_required, current_user
@@ -11,12 +11,14 @@ from flask_admin import helpers as admin_helpers
 from flask_admin import BaseView, expose
 from wtforms import PasswordField
 import usp_database
+import usp_runtime
+from flask_restful import reqparse, abort, Api, Resource
 
 # Create Flask application
 app = Flask(__name__)
 app.config.from_pyfile('config.py')
 db = SQLAlchemy(app)
-
+api = Api(app)
 
 # Define models
 roles_users = db.Table(
@@ -26,9 +28,24 @@ roles_users = db.Table(
 )
 
 
+class LogTraffic(Resource):
+    def get(self):
+        json_list = usp_database.getSession().query(usp_database.LogMessages).one()
+        return json_list.to_dict()
+#        return TODOS
+
+    def post(self):
+        args = parser.parse_args()
+        todo_id = int(max(TODOS.keys()).lstrip('todo')) + 1
+        todo_id = 'todo%i' % todo_id
+        TODOS[todo_id] = {'task': args['task']}
+        return TODOS[todo_id], 201
+api.add_resource(LogTraffic, '/logtraffic')
+
+
 class Role(db.Model, RoleMixin):
     id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(80), unique=True)
+    name = db.Column(db.String(255), unique=True)
     description = db.Column(db.String(255))
 
     def __str__(self):
@@ -43,12 +60,10 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(255), nullable=False)
     active = db.Column(db.Boolean())
     confirmed_at = db.Column(db.DateTime())
-    roles = db.relationship('Role', secondary=roles_users,
-                            backref=db.backref('users', lazy='dynamic'))
+    roles = db.relationship('Role', secondary=roles_users, backref=db.backref('users', lazy='dynamic'))
 
     def __str__(self):
         return self.email
-
 
 # Setup Flask-Security
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
@@ -146,8 +161,6 @@ def security_context_processor():
     )
 
 def init_db_users():
-    import string
-
     db.drop_all()
     db.create_all()
 
@@ -156,8 +169,6 @@ def init_db_users():
         super_user_role = Role(name='superuser')
         db.session.add(user_role)
         db.session.add(super_user_role)
-        db.session.commit()
-
         test_user = user_datastore.create_user(
             first_name='Admin',
             email='admin',
@@ -167,13 +178,19 @@ def init_db_users():
         db.session.commit()
     return
 
-if __name__ == '__main__':
+TODOS = {
+    'todo1': {'task': 'build an API'},
+    'todo2': {'task': '?????'},
+    'todo3': {'task': 'profit!'},
+}
 
+if __name__ == '__main__':
+    usp_runtime.start_server()
     # Build a sample db on the fly, if one does not exist yet.
     app_dir = os.path.realpath(os.path.dirname(__file__))
     database_path = os.path.join(app_dir, app.config['DATABASE_FILE'])
     if not os.path.exists(database_path):
         init_db_users()
-
+    
     # Start app
     app.run(debug=True)

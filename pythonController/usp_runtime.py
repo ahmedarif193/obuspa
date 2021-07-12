@@ -48,6 +48,12 @@ def start_stomp():
         return 0
 
 def usp_stomp_thread(name):
+    print("-------------------------------------------------------")
+    logMessages = usp_database.getSession().query(usp_database.LogMessages).all()
+    for row in logMessages:
+           print ("logMessages from: ",row.log_from, ", logMessages to:",row.log_to, ", logMessages log_type:", row.log_type)
+    print("-------------------------------------------------------")
+
     usp_database.initdb()
     devices_registred = usp_database.getRegestredDevices()
     while 1:
@@ -55,6 +61,7 @@ def usp_stomp_thread(name):
             pingRecord = msg_creator.MSG_CREATOR_NewRecord(row.device_id, msg_creator.MSG_CREATOR_PING())
             payload_ping_record = pingRecord.SerializeToString()
             conn.send(body=payload_ping_record, content_type='application/vnd.bbf.usp.msg', destination=row.device_topic)
+            usp_database.Sql_Log('Controller', row.device_id, 1)
             print ("--------------------------- device_protocol: ",row.device_protocol, "device_topic:",row.device_topic, "device_id:",row.device_id)
         logging.info("Thread %s: loop", name)
         time.sleep(2)

@@ -38,6 +38,7 @@ def MSG_HANDLER_HandleBinaryMessage(record_payload,agent_endpoint):
 def HandleUspMessage(usp_msg,agent_endpoint):
     #print(text_format.MessageToString(usp_msg))
     #handle usp_msg.body.error
+    usp_database.Sql_Log(agent_endpoint, 'Controller', usp_msg.header.msg_type)
     if usp_msg.header.msg_type == usp_commons.USP_MsgType.GET_RESP :
         MSG_HANDLER_HandleGet_resp(usp_msg.body.response,agent_endpoint)
 
